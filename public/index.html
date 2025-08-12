@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gruppspel</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="nameEntry">
+        <input id="nameInput" placeholder="Skriv ditt namn">
+        <button id="joinGameBtn">Gå med i spel</button>
+    </div>
+
+    <div id="lobby" style="display:none;">
+        <h2>Lobby</h2>
+        <ul id="players"></ul>
+        <button id="startGameBtn">Starta spelet</button>
+    </div>
+
+    <div id="game" style="display:none;">
+        <h2>Din roll:</h2>
+        <p id="role"></p>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="client.js"></script>
+</body>
+</html>
