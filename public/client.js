@@ -25,24 +25,31 @@ if (!executionerBox) {
     executionerBox.style.textAlign = 'center';
     executionerBox.style.zIndex = '9999';
     executionerBox.style.display = 'none';
+    executionerBox.style.pointerEvents = 'none'; // block clicks when hidden
     document.body.appendChild(executionerBox);
 }
 
 let currentRoom = '';
 
+// Säkerställ att joinBtn är enabled och synlig från start
+joinBtn.disabled = false;
+joinBtn.style.display = 'inline-block';
+
 joinBtn.addEventListener('click', () => {
     const name = nameInput.value.trim();
     const roomCode = roomInput.value.trim();
     if (!name || !roomCode) return alert('Skriv in namn och rumskod');
+
     currentRoom = roomCode;
     socket.emit('joinRoom', { roomCode, name });
 
-    // Dölj join-rutan (inputs + knapp)
+    // Disable knappen och dölj inputs och knapp när man joinar
+    joinBtn.disabled = true;
     nameInput.style.display = 'none';
     roomInput.style.display = 'none';
     joinBtn.style.display = 'none';
 
-    // Visa playerlist (startBtn syns bara för ledaren)
+    // Visa playerlist, startBtn syns bara för ledare senare
     playerListDiv.style.display = 'block';
     startBtn.style.display = 'none';
 });
@@ -70,7 +77,10 @@ socket.on('gameStarted', (assignedRoles) => {
     alert(`Din roll är: ${me.role}`);
 
     traitorBox.style.display = 'none';
+    traitorBox.style.pointerEvents = 'none';
+
     executionerBox.style.display = 'none';
+    executionerBox.style.pointerEvents = 'none';
 
     const traitorRoles = ['förrädare', 'bomb', 'dödskalle'];
     if (traitorRoles.includes(me.role)) {
@@ -79,14 +89,12 @@ socket.on('gameStarted', (assignedRoles) => {
             .map(p => p.name);
         traitorList.innerHTML = mates.map(m => `<li>${m}</li>`).join('');
         traitorBox.style.display = 'block';
+        traitorBox.style.pointerEvents = 'auto'; // tillåt klick
     }
-});
-
-socket.on('traitorInfo', (mates) => {
-    // Kan ignoreras om vi visar allt i gameStarted
 });
 
 socket.on('executionerTarget', (targetName) => {
     executionerBox.textContent = `Mål: ${targetName}`;
     executionerBox.style.display = 'block';
+    executionerBox.style.pointerEvents = 'auto'; // tillåt klick
 });
