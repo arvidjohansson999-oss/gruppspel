@@ -9,7 +9,7 @@ const startBtn = document.getElementById('startBtn');
 const traitorBox = document.getElementById('traitorBox');
 const traitorList = document.getElementById('traitorList');
 
-// Skapa en ny ruta för avrättarens mål
+// Skapa avrättar-rutan om den inte finns
 let executionerBox = document.getElementById('executionerBox');
 if (!executionerBox) {
     executionerBox = document.createElement('div');
@@ -73,7 +73,7 @@ socket.on('gameStarted', (assignedRoles) => {
 });
 
 socket.on('traitorInfo', (mates) => {
-    // Behövs egentligen inte nu eftersom vi kör allt i gameStarted, men lämnar kvar
+    // Vi kan ignorera detta om vi visar allt i gameStarted
 });
 
 socket.on('executionerTarget', (targetName) => {
