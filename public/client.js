@@ -5,8 +5,29 @@ const roomInput = document.getElementById('roomInput');
 const joinBtn = document.getElementById('joinBtn');
 const playerListDiv = document.getElementById('playerList');
 const startBtn = document.getElementById('startBtn');
+
 const traitorBox = document.getElementById('traitorBox');
 const traitorList = document.getElementById('traitorList');
+
+// Skapa en ny ruta för avrättarens mål
+let executionerBox = document.getElementById('executionerBox');
+if (!executionerBox) {
+    executionerBox = document.createElement('div');
+    executionerBox.id = 'executionerBox';
+    executionerBox.style.position = 'fixed';
+    executionerBox.style.top = '50%';
+    executionerBox.style.left = '50%';
+    executionerBox.style.transform = 'translate(-50%, -50%)';
+    executionerBox.style.backgroundColor = 'rgba(255, 0, 0, 0.8)';
+    executionerBox.style.color = 'white';
+    executionerBox.style.padding = '20px';
+    executionerBox.style.borderRadius = '10px';
+    executionerBox.style.fontSize = '2rem';
+    executionerBox.style.textAlign = 'center';
+    executionerBox.style.zIndex = '9999';
+    executionerBox.style.display = 'none';
+    document.body.appendChild(executionerBox);
+}
 
 let currentRoom = '';
 
@@ -35,13 +56,28 @@ startBtn.addEventListener('click', () => {
 socket.on('gameStarted', (assignedRoles) => {
     const me = assignedRoles.find(p => p.id === socket.id);
     alert(`Din roll är: ${me.role}`);
+
+    // Dölj alla rutor först
+    traitorBox.style.display = 'none';
+    executionerBox.style.display = 'none';
+
+    const traitorRoles = ['förrädare', 'bomb', 'dödskalle'];
+    if (traitorRoles.includes(me.role)) {
+        // Visa förrädarrutan och fyll med namn på medspelare
+        const mates = assignedRoles
+            .filter(p => traitorRoles.includes(p.role) && p.id !== me.id)
+            .map(p => p.name);
+        traitorList.innerHTML = mates.map(m => `<li>${m}</li>`).join('');
+        traitorBox.style.display = 'block';
+    }
 });
 
 socket.on('traitorInfo', (mates) => {
-    traitorList.innerHTML = mates.map(m => `<li>${m}</li>`).join('');
-    traitorBox.style.display = 'block';
+    // Behövs egentligen inte nu eftersom vi kör allt i gameStarted, men lämnar kvar
 });
 
 socket.on('executionerTarget', (targetName) => {
-    alert(`Mål: ${targetName}`);
+    // Visa avrättarens målruta
+    executionerBox.textContent = `Mål: ${targetName}`;
+    executionerBox.style.display = 'block';
 });
