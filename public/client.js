@@ -37,6 +37,12 @@ joinBtn.addEventListener('click', () => {
     if (!name || !roomCode) return alert('Skriv in namn och rumskod');
     currentRoom = roomCode;
     socket.emit('joinRoom', { roomCode, name });
+
+    // Här fixar vi så knappen och inputs låses
+    joinBtn.disabled = true;
+    nameInput.disabled = true;
+    roomInput.disabled = true;
+    joinBtn.textContent = 'Gått med!';
 });
 
 socket.on('playerList', (players) => {
@@ -73,11 +79,10 @@ socket.on('gameStarted', (assignedRoles) => {
 });
 
 socket.on('traitorInfo', (mates) => {
-    // Vi kan ignorera detta om vi visar allt i gameStarted
+    // Kan ignoreras om allt körs i gameStarted
 });
 
 socket.on('executionerTarget', (targetName) => {
-    // Visa avrättarens målruta
     executionerBox.textContent = `Mål: ${targetName}`;
     executionerBox.style.display = 'block';
 });
