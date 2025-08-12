@@ -4,64 +4,21 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Arvids Amongus</title>
+    <title>AAE - Arvids Amongus</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #222;
-            color: #eee;
-            text-align: center;
-            padding: 20px;
-        }
+        body { font-family: Arial, sans-serif; background: #222; color: #eee; text-align: center; padding: 20px; }
         #traitorBox, #executionerBox {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(255, 0, 0, 0.8);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            font-size: 2rem;
-            text-align: center;
-            z-index: 9999;
-            display: none;
-            pointer-events: none;
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background-color: rgba(255,0,0,0.85); color: white; padding: 20px; border-radius: 10px;
+            font-size: 1.8rem; text-align: center; z-index: 9999; display: none; pointer-events: none;
         }
-        #playerList {
-            margin-top: 20px;
-            text-align: left;
-            max-width: 300px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        #traitorSliderContainer {
-            margin-top: 20px;
-            background: #333;
-            padding: 10px;
-            border-radius: 8px;
-            display: none;
-        }
-        #traitorSliderContainer label {
-            margin-right: 10px;
-        }
-        #traitorSlider {
-            vertical-align: middle;
-        }
-        #traitorCount {
-            font-weight: bold;
-            margin-left: 8px;
-            color: #f00;
-        }
+        #playerList { margin-top: 20px; text-align: left; max-width: 300px; margin-left: auto; margin-right: auto; }
+        #traitorSliderContainer { margin-top: 20px; background: #333; padding: 10px; border-radius: 8px; display: none; }
         #roomCodeDisplay {
-            font-size: 1.2rem;
-            font-weight: bold;
-            background: #333;
-            padding: 8px 12px;
-            border-radius: 6px;
-            display: none; /* syns bara för värden */
-            margin-bottom: 15px;
+            font-size: 1.1rem; font-weight: bold; background: #333; padding: 8px 12px; border-radius: 6px;
+            display: none; margin: 12px auto;
         }
+        input, button { font-size: 1rem; padding: 8px; margin: 5px; border-radius: 5px; border: none; }
     </style>
 </head>
 <body>
