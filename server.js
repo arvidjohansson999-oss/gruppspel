@@ -34,24 +34,24 @@ io.on('connection', (socket) => {
         const traitorRoles = ['förrädare', 'bomb', 'dödskalle'];
         const uniqueRoles = ['avrättare', 'sheriff'];
 
-        // 1. Välj antal förrädare (2 eller 3), max antal spelare
+        // Bestäm antal förrädare (2 eller 3), max spelare
         const numTraitors = Math.min(maxTraitors, players.length, Math.floor(Math.random() * 2) + 2); // 2 eller 3
 
-        // 2. Välj slumpmässigt vilka förrädarroller som ska ingå
+        // Slumpa vilka förrädarroller som ska användas
         let chosenTraitorRoles = [];
         while (chosenTraitorRoles.length < numTraitors) {
             const r = traitorRoles[Math.floor(Math.random() * traitorRoles.length)];
             if (!chosenTraitorRoles.includes(r)) chosenTraitorRoles.push(r);
         }
 
-        // 3. Unika roller (avrättare, sheriff), max 1 vardera
+        // Lägg till unika roller om det finns plats
         let uniqueAssigned = [];
         if (players.length > chosenTraitorRoles.length) {
             if (players.length - chosenTraitorRoles.length >= 1) uniqueAssigned.push('avrättare');
             if (players.length - chosenTraitorRoles.length - uniqueAssigned.length >= 1) uniqueAssigned.push('sheriff');
         }
 
-        // 4. Tilldela roller: börja med alla trogen
+        // Tilldela roller: börja med trogen till alla
         let rolesToAssign = new Array(players.length).fill('trogen');
 
         // Placera ut förrädarroller först
@@ -64,7 +64,7 @@ io.on('connection', (socket) => {
             rolesToAssign[chosenTraitorRoles.length + i] = uniqueAssigned[i];
         }
 
-        // Shuffle rollerna så de sprids
+        // Shuffle rollerna så det blir random placering
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -74,7 +74,7 @@ io.on('connection', (socket) => {
         }
         rolesToAssign = shuffle(rolesToAssign);
 
-        // Tilldela roller till spelare
+        // Koppla roller till spelare
         const assignedRoles = players.map((p, i) => ({
             id: p.id,
             name: p.name,
@@ -83,7 +83,7 @@ io.on('connection', (socket) => {
 
         io.to(roomCode).emit('gameStarted', assignedRoles);
 
-        // Skicka info till förrädare
+        // Skicka förrädar-info till förrädare
         assignedRoles.forEach(player => {
             if (traitorRoles.includes(player.role)) {
                 const traitorMates = assignedRoles
