@@ -37,10 +37,14 @@ joinBtn.addEventListener('click', () => {
     currentRoom = roomCode;
     socket.emit('joinRoom', { roomCode, name });
 
-    joinBtn.disabled = true;
-    nameInput.disabled = true;
-    roomInput.disabled = true;
-    joinBtn.textContent = 'Gått med!';
+    // Dölj join-rutan (inputs + knapp)
+    nameInput.style.display = 'none';
+    roomInput.style.display = 'none';
+    joinBtn.style.display = 'none';
+
+    // Visa playerlist (startBtn syns bara för ledaren)
+    playerListDiv.style.display = 'block';
+    startBtn.style.display = 'none';
 });
 
 socket.on('alreadyJoined', () => {
