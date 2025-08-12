@@ -9,6 +9,7 @@ const startBtn = document.getElementById('startBtn');
 const traitorSliderContainer = document.getElementById('traitorSliderContainer');
 const traitorSlider = document.getElementById('traitorSlider');
 const traitorCountSpan = document.getElementById('traitorCount');
+const roomCodeDisplay = document.getElementById('roomCodeDisplay');
 
 const traitorBox = document.getElementById('traitorBox');
 const traitorList = document.getElementById('traitorList');
@@ -49,7 +50,8 @@ joinBtn.addEventListener('click', () => {
 
     playerListDiv.style.display = 'block';
     startBtn.style.display = 'none';
-    traitorSliderContainer.style.display = 'none'; // Dölj tills vi vet om ledare
+    traitorSliderContainer.style.display = 'none';
+    roomCodeDisplay.style.display = 'none';
 });
 
 socket.on('alreadyJoined', () => {
@@ -60,13 +62,16 @@ socket.on('playerList', (players) => {
     playerListDiv.innerHTML = '<h3>Spelare:</h3><ul>' +
         players.map(p => `<li>${p.name}</li>`).join('') + '</ul>';
 
-    // Visa startknapp och slider ENDAST till ledaren (första i listan)
     if (players.length > 0 && socket.id === players[0].id) {
+        // Ledaren
         startBtn.style.display = 'inline-block';
         traitorSliderContainer.style.display = 'block';
+        roomCodeDisplay.textContent = `Rumskod: ${currentRoom}`;
+        roomCodeDisplay.style.display = 'inline-block';
     } else {
         startBtn.style.display = 'none';
         traitorSliderContainer.style.display = 'none';
+        roomCodeDisplay.style.display = 'none';
     }
 });
 
@@ -84,10 +89,7 @@ socket.on('gameStarted', (assignedRoles) => {
     alert(`Din roll är: ${me.role}`);
 
     traitorBox.style.display = 'none';
-    traitorBox.style.pointerEvents = 'none';
-
     executionerBox.style.display = 'none';
-    executionerBox.style.pointerEvents = 'none';
 
     const traitorRoles = ['förrädare', 'bomb', 'dödskalle'];
     if (traitorRoles.includes(me.role)) {
@@ -96,12 +98,10 @@ socket.on('gameStarted', (assignedRoles) => {
             .map(p => p.name);
         traitorList.innerHTML = mates.map(m => `<li>${m}</li>`).join('');
         traitorBox.style.display = 'block';
-        traitorBox.style.pointerEvents = 'auto';
     }
 });
 
 socket.on('executionerTarget', (targetName) => {
     executionerBox.textContent = `Mål: ${targetName}`;
     executionerBox.style.display = 'block';
-    executionerBox.style.pointerEvents = 'auto';
 });
