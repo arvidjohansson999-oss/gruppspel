@@ -1,29 +1,134 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gruppspel</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gruppspel</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #222; color: #eee; padding: 20px; }
+  #playersList { margin-top: 10px; }
+  #traitorModal {
+    display: none;
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: #333;
+    border: 2px solid #f00;
+    padding: 20px;
+    z-index: 1000;
+    width: 300px;
+    text-align: center;
+    border-radius: 8px;
+  }
+  #traitorModal button {
+    margin-top: 15px;
+    padding: 8px 15px;
+    background: #f00;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+  }
+  #overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 900;
+  }
+</style>
 </head>
 <body>
-    <div id="nameEntry">
-        <input id="nameInput" placeholder="Skriv ditt namn">
-        <button id="joinGameBtn">Gå med i spel</button>
-    </div>
 
-    <div id="lobby" style="display:none;">
-        <h2>Lobby</h2>
-        <ul id="players"></ul>
-        <button id="startGameBtn">Starta spelet</button>
-    </div>
+<h1>Gruppspel</h1>
 
-    <div id="game" style="display:none;">
-        <h2>Din roll:</h2>
-        <p id="role"></p>
-    </div>
+<div id="joinSection">
+  <input type="text" id="nameInput" placeholder="Skriv ditt namn" />
+  <input type="text" id="roomInput" placeholder="Skriv rumskod" value="main" />
+  <button id="joinBtn">Gå med i spel</button>
+</div>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="client.js"></script>
+<div id="gameSection" style="display:none;">
+  <h2>Spelare i rummet:</h2>
+  <ul id="playersList"></ul>
+  <button id="startGameBtn">Starta spelet</button>
+</div>
+
+<div id="overlay"></div>
+<div id="traitorModal">
+  <h3>Du är förrädare!</h3>
+  <p id="traitorMates"></p>
+  <button id="closeModalBtn">Stäng</button>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+
+  const joinSection = document.getElementById('joinSection');
+  const gameSection = document.getElementById('gameSection');
+  const nameInput = document.getElementById('nameInput');
+  const roomInput = document.getElementById('roomInput');
+  const joinBtn = document.getElementById('joinBtn');
+  const playersList = document.getElementById('playersList');
+  const startGameBtn = document.getElementById('startGameBtn');
+
+  const overlay = document.getElementById('overlay');
+  const traitorModal = document.getElementById('traitorModal');
+  const traitorMatesText = document.getElementById('traitorMates');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+
+  let roomCode = null;
+
+  joinBtn.onclick = () => {
+    const name = nameInput.value.trim();
+    const room = roomInput.value.trim();
+
+    if (!name || !room) {
+      alert('Fyll i namn och rumskod!');
+      return;
+    }
+
+    roomCode = room;
+    socket.emit('joinRoom', { roomCode: roomCode, name: name });
+
+    joinSection.style.display = 'none';
+    gameSection.style.display = 'block';
+  };
+
+  socket.on('playerList', (players) => {
+    playersList.innerHTML = '';
+    players.forEach(p => {
+      const li = document.createElement('li');
+      li.textContent = p.name;
+      playersList.appendChild(li);
+    });
+  });
+
+  startGameBtn.onclick = () => {
+    if (!roomCode) return;
+    socket.emit('startGame', roomCode);
+  };
+
+  socket.on('gameStarted', (assignedRoles) => {
+    // Här kan du visa t.ex. rollerna om du vill
+    console.log('Spelet startat, roller:', assignedRoles);
+  });
+
+  socket.on('traitorInfo', (traitorMates) => {
+    if (traitorMates.length > 0) {
+      traitorMatesText.textContent = traitorMates.join(', ');
+      overlay.style.display = 'block';
+      traitorModal.style.display = 'block';
+    }
+  });
+
+  closeModalBtn.onclick = () => {
+    overlay.style.display = 'none';
+    traitorModal.style.display = 'none';
+  };
+</script>
+
 </body>
 </html>
+
