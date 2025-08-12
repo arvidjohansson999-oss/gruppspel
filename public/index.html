@@ -36,7 +36,22 @@
             margin-right: auto;
         }
         #traitorSliderContainer {
-            margin-top: 15px;
+            margin-top: 20px;
+            background: #333;
+            padding: 10px;
+            border-radius: 8px;
+            display: none; /* Start hidden, visas via JS */
+        }
+        #traitorSliderContainer label {
+            margin-right: 10px;
+        }
+        #traitorSlider {
+            vertical-align: middle;
+        }
+        #traitorCount {
+            font-weight: bold;
+            margin-left: 8px;
+            color: #f00;
         }
     </style>
 </head>
@@ -52,7 +67,7 @@
     <div id="playerList" style="display:none"></div>
     <button id="startBtn" style="display:none">Starta spelet</button>
 
-    <div id="traitorSliderContainer" style="display:none;">
+    <div id="traitorSliderContainer">
         <label for="traitorSlider">Antal förädare:</label>
         <input type="range" id="traitorSlider" min="1" max="3" value="2" />
         <span id="traitorCount">2</span>
@@ -63,8 +78,6 @@
         <p>Dina medspelare:</p>
         <ul id="traitorList"></ul>
     </div>
-
-    <!-- Executioner box skapas dynamiskt i client.js -->
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="client.js"></script>
