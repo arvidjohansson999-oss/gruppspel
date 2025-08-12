@@ -4,78 +4,67 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Arvids Amongus E</title>
+    <title>Arvids Amongus</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #222;
+            background: #222;
             color: #eee;
             text-align: center;
-            margin: 0;
             padding: 20px;
         }
-        #traitorBox {
-            display: none;
-            background: rgba(255, 0, 0, 0.3);
-            border: 2px solid red;
-            border-radius: 10px;
+        #traitorBox, #executionerBox {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 0, 0, 0.8);
+            color: white;
             padding: 20px;
+            border-radius: 10px;
+            font-size: 2rem;
+            text-align: center;
+            z-index: 9999;
+            display: none;
+            pointer-events: none;
+        }
+        #playerList {
             margin-top: 20px;
+            text-align: left;
             max-width: 300px;
             margin-left: auto;
             margin-right: auto;
         }
-        #traitorBox h2 {
-            margin: 0 0 10px 0;
-            font-size: 1.5rem;
-            color: red;
-        }
-        #traitorList {
-            list-style: none;
-            padding-left: 0;
-            font-size: 1.2rem;
-        }
-        #playerList ul {
-            list-style: none;
-            padding-left: 0;
-        }
-        #startBtn {
-            display: none;
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 1.1rem;
-            cursor: pointer;
-        }
-        input, button {
-            font-size: 1rem;
-            padding: 8px;
-            margin: 5px;
-            border-radius: 5px;
-            border: none;
-        }
-        input {
-            width: 200px;
-        }
-        #executionerBox {
-            /* This is handled inline in client.js, no CSS needed here */
+        #traitorSliderContainer {
+            margin-top: 15px;
         }
     </style>
 </head>
 <body>
-    <h1>Arvids Amongus E</h1>
-    <div>
-        <input id="nameInput" type="text" placeholder="Skriv ditt namn" />
-        <input id="roomInput" type="text" placeholder="Rumskod" />
+    <h1>AAE - Arvids Amongus Experience</h1>
+
+    <div id="joinMenu">
+        <input type="text" id="nameInput" placeholder="Skriv ditt namn" />
+        <input type="text" id="roomInput" placeholder="Rumskod" />
         <button id="joinBtn">Gå med i spel</button>
     </div>
 
-    <div id="playerList"></div>
-    <button id="startBtn">Starta spelet</button>
+    <div id="playerList" style="display:none"></div>
+    <button id="startBtn" style="display:none">Starta spelet</button>
+
+    <div id="traitorSliderContainer" style="display:none;">
+        <label for="traitorSlider">Antal förädare:</label>
+        <input type="range" id="traitorSlider" min="1" max="3" value="2" />
+        <span id="traitorCount">2</span>
+    </div>
 
     <div id="traitorBox">
-        <h2>Dina medförrädare:</h2>
+        <h2>Förädare</h2>
+        <p>Dina medspelare:</p>
         <ul id="traitorList"></ul>
     </div>
+
+    <!-- Executioner box skapas dynamiskt i client.js -->
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="client.js"></script>
