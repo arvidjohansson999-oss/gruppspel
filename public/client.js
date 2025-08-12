@@ -33,11 +33,15 @@ startBtn.addEventListener('click', () => {
 });
 
 socket.on('gameStarted', (assignedRoles) => {
-    const myRole = assignedRoles.find(p => p.id === socket.id).role;
-    alert(`Din roll är: ${myRole}`);
+    const me = assignedRoles.find(p => p.id === socket.id);
+    alert(`Din roll är: ${me.role}`);
 });
 
 socket.on('traitorInfo', (mates) => {
     traitorList.innerHTML = mates.map(m => `<li>${m}</li>`).join('');
     traitorBox.style.display = 'block';
+});
+
+socket.on('executionerTarget', (targetName) => {
+    alert(`Mål: ${targetName}`);
 });
