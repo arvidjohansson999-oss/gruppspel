@@ -9,7 +9,6 @@ const startBtn = document.getElementById('startBtn');
 const traitorBox = document.getElementById('traitorBox');
 const traitorList = document.getElementById('traitorList');
 
-// Skapa avrättar-rutan om den inte finns
 let executionerBox = document.getElementById('executionerBox');
 if (!executionerBox) {
     executionerBox = document.createElement('div');
@@ -38,11 +37,14 @@ joinBtn.addEventListener('click', () => {
     currentRoom = roomCode;
     socket.emit('joinRoom', { roomCode, name });
 
-    // Här fixar vi så knappen och inputs låses
     joinBtn.disabled = true;
     nameInput.disabled = true;
     roomInput.disabled = true;
     joinBtn.textContent = 'Gått med!';
+});
+
+socket.on('alreadyJoined', () => {
+    alert('Du är redan med i spelet, kan inte gå med flera gånger.');
 });
 
 socket.on('playerList', (players) => {
@@ -63,13 +65,11 @@ socket.on('gameStarted', (assignedRoles) => {
     const me = assignedRoles.find(p => p.id === socket.id);
     alert(`Din roll är: ${me.role}`);
 
-    // Dölj alla rutor först
     traitorBox.style.display = 'none';
     executionerBox.style.display = 'none';
 
     const traitorRoles = ['förrädare', 'bomb', 'dödskalle'];
     if (traitorRoles.includes(me.role)) {
-        // Visa förrädarrutan och fyll med namn på medspelare
         const mates = assignedRoles
             .filter(p => traitorRoles.includes(p.role) && p.id !== me.id)
             .map(p => p.name);
@@ -79,7 +79,7 @@ socket.on('gameStarted', (assignedRoles) => {
 });
 
 socket.on('traitorInfo', (mates) => {
-    // Kan ignoreras om allt körs i gameStarted
+    // Kan ignoreras om vi visar allt i gameStarted
 });
 
 socket.on('executionerTarget', (targetName) => {
