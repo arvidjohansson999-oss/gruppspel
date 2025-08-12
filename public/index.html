@@ -40,7 +40,7 @@
             background: #333;
             padding: 10px;
             border-radius: 8px;
-            display: none; /* Start hidden, visas via JS */
+            display: none;
         }
         #traitorSliderContainer label {
             margin-right: 10px;
@@ -53,6 +53,15 @@
             margin-left: 8px;
             color: #f00;
         }
+        #roomCodeDisplay {
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: #333;
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: none; /* syns bara för värden */
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
@@ -63,6 +72,8 @@
         <input type="text" id="roomInput" placeholder="Rumskod" />
         <button id="joinBtn">Gå med i spel</button>
     </div>
+
+    <div id="roomCodeDisplay"></div>
 
     <div id="playerList" style="display:none"></div>
     <button id="startBtn" style="display:none">Starta spelet</button>
