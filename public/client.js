@@ -1,100 +1,72 @@
-const socket = io();
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Arvids Amongus</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #222;
+            color: #eee;
+            text-align: center;
+            padding: 20px;
+        }
+        #traitorBox, #executionerBox {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 2rem;
+            text-align: center;
+            z-index: 9999;
+            display: none;
+            pointer-events: none;
+        }
+        #playerList {
+            margin-top: 20px;
+            text-align: left;
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        #traitorSliderContainer {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>AAE - Arvids Amongus Experience</h1>
 
-const nameInput = document.getElementById('nameInput');
-const roomInput = document.getElementById('roomInput');
-const joinBtn = document.getElementById('joinBtn');
-const playerListDiv = document.getElementById('playerList');
-const startBtn = document.getElementById('startBtn');
+    <div id="joinMenu">
+        <input type="text" id="nameInput" placeholder="Skriv ditt namn" />
+        <input type="text" id="roomInput" placeholder="Rumskod" />
+        <button id="joinBtn">Gå med i spel</button>
+    </div>
 
-const traitorBox = document.getElementById('traitorBox');
-const traitorList = document.getElementById('traitorList');
+    <div id="playerList" style="display:none"></div>
+    <button id="startBtn" style="display:none">Starta spelet</button>
 
-let executionerBox = document.getElementById('executionerBox');
-if (!executionerBox) {
-    executionerBox = document.createElement('div');
-    executionerBox.id = 'executionerBox';
-    executionerBox.style.position = 'fixed';
-    executionerBox.style.top = '50%';
-    executionerBox.style.left = '50%';
-    executionerBox.style.transform = 'translate(-50%, -50%)';
-    executionerBox.style.backgroundColor = 'rgba(255, 0, 0, 0.8)';
-    executionerBox.style.color = 'white';
-    executionerBox.style.padding = '20px';
-    executionerBox.style.borderRadius = '10px';
-    executionerBox.style.fontSize = '2rem';
-    executionerBox.style.textAlign = 'center';
-    executionerBox.style.zIndex = '9999';
-    executionerBox.style.display = 'none';
-    executionerBox.style.pointerEvents = 'none'; // block clicks when hidden
-    document.body.appendChild(executionerBox);
-}
+    <div id="traitorSliderContainer" style="display:none;">
+        <label for="traitorSlider">Antal förädare:</label>
+        <input type="range" id="traitorSlider" min="1" max="3" value="2" />
+        <span id="traitorCount">2</span>
+    </div>
 
-let currentRoom = '';
+    <div id="traitorBox">
+        <h2>Förädare</h2>
+        <p>Dina medspelare:</p>
+        <ul id="traitorList"></ul>
+    </div>
 
-// Säkerställ att joinBtn är enabled och synlig från start
-joinBtn.disabled = false;
-joinBtn.style.display = 'inline-block';
+    <!-- Executioner box skapas dynamiskt i client.js -->
 
-joinBtn.addEventListener('click', () => {
-    const name = nameInput.value.trim();
-    const roomCode = roomInput.value.trim();
-    if (!name || !roomCode) return alert('Skriv in namn och rumskod');
-
-    currentRoom = roomCode;
-    socket.emit('joinRoom', { roomCode, name });
-
-    // Disable knappen och dölj inputs och knapp när man joinar
-    joinBtn.disabled = true;
-    nameInput.style.display = 'none';
-    roomInput.style.display = 'none';
-    joinBtn.style.display = 'none';
-
-    // Visa playerlist, startBtn syns bara för ledare senare
-    playerListDiv.style.display = 'block';
-    startBtn.style.display = 'none';
-});
-
-socket.on('alreadyJoined', () => {
-    alert('Du är redan med i spelet, kan inte gå med flera gånger.');
-});
-
-socket.on('playerList', (players) => {
-    playerListDiv.innerHTML = '<h3>Spelare:</h3><ul>' +
-        players.map(p => `<li>${p.name}</li>`).join('') + '</ul>';
-    if (players.length > 0 && socket.id === players[0].id) {
-        startBtn.style.display = 'inline-block';
-    } else {
-        startBtn.style.display = 'none';
-    }
-});
-
-startBtn.addEventListener('click', () => {
-    socket.emit('startGame', currentRoom);
-});
-
-socket.on('gameStarted', (assignedRoles) => {
-    const me = assignedRoles.find(p => p.id === socket.id);
-    alert(`Din roll är: ${me.role}`);
-
-    traitorBox.style.display = 'none';
-    traitorBox.style.pointerEvents = 'none';
-
-    executionerBox.style.display = 'none';
-    executionerBox.style.pointerEvents = 'none';
-
-    const traitorRoles = ['förrädare', 'bomb', 'dödskalle'];
-    if (traitorRoles.includes(me.role)) {
-        const mates = assignedRoles
-            .filter(p => traitorRoles.includes(p.role) && p.id !== me.id)
-            .map(p => p.name);
-        traitorList.innerHTML = mates.map(m => `<li>${m}</li>`).join('');
-        traitorBox.style.display = 'block';
-        traitorBox.style.pointerEvents = 'auto'; // tillåt klick
-    }
-});
-
-socket.on('executionerTarget', (targetName) => {
-    executionerBox.textContent = `Mål: ${targetName}`;
-    executionerBox.style.display = 'block';
-    executionerBox.style.pointerEvents = 'auto'; // tillåt klick
-});
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="client.js"></script>
+</body>
+</html>
