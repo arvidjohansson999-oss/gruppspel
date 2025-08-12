@@ -15,86 +15,93 @@ io.on('connection', (socket) => {
     console.log(`Ny användare anslöt: ${socket.id}`);
 
     socket.on('joinRoom', ({ roomCode, name }) => {
-        if (!roomCode || !name) {
-            console.log('Fel: roomCode eller name saknas vid joinRoom');
-            return;
-        }
+        if (!roomCode || !name) return;
+
         socket.join(roomCode);
         if (!rooms[roomCode]) {
             rooms[roomCode] = { players: [], leader: socket.id };
         }
         rooms[roomCode].players.push({ id: socket.id, name });
-        console.log(`Spelare ${name} gick med i rum ${roomCode}`);
+
         io.to(roomCode).emit('playerList', rooms[roomCode].players);
     });
 
     socket.on('startGame', (roomCode) => {
-        console.log(`StartGame mottaget från rum: ${roomCode}`);
+        if (!roomCode || !rooms[roomCode]) return;
 
-        if (!roomCode || !rooms[roomCode]) {
-            console.log('Fel: ogiltigt roomCode vid startGame');
-            return;
-        }
-
-        const roles = ['förrädare', 'trogen', 'avrättare', 'bomb', 'dödskalle', 'sheriff'];
         let players = rooms[roomCode].players;
+        const maxTraitors = 3;
+        const traitorRoles = ['förrädare', 'bomb', 'dödskalle'];
+        const uniqueRoles = ['avrättare', 'sheriff'];
 
-        // Om fler spelare än roller, fyll på med "civil"
-        const extendedRoles = [...roles];
-        while (extendedRoles.length < players.length) {
-            extendedRoles.push('civil');
+        // 1. Välj antal förrädare (2 eller 3), max antal spelare
+        const numTraitors = Math.min(maxTraitors, players.length, Math.floor(Math.random() * 2) + 2); // 2 eller 3
+
+        // 2. Välj slumpmässigt vilka förrädarroller som ska ingå
+        let chosenTraitorRoles = [];
+        while (chosenTraitorRoles.length < numTraitors) {
+            const r = traitorRoles[Math.floor(Math.random() * traitorRoles.length)];
+            if (!chosenTraitorRoles.includes(r)) chosenTraitorRoles.push(r);
         }
 
-        // Fisher-Yates shuffle
+        // 3. Unika roller (avrättare, sheriff), max 1 vardera
+        let uniqueAssigned = [];
+        if (players.length > chosenTraitorRoles.length) {
+            if (players.length - chosenTraitorRoles.length >= 1) uniqueAssigned.push('avrättare');
+            if (players.length - chosenTraitorRoles.length - uniqueAssigned.length >= 1) uniqueAssigned.push('sheriff');
+        }
+
+        // 4. Tilldela roller: börja med alla trogen
+        let rolesToAssign = new Array(players.length).fill('trogen');
+
+        // Placera ut förrädarroller först
+        for (let i = 0; i < chosenTraitorRoles.length; i++) {
+            rolesToAssign[i] = chosenTraitorRoles[i];
+        }
+
+        // Placera ut unika roller efter förrädare
+        for (let i = 0; i < uniqueAssigned.length; i++) {
+            rolesToAssign[chosenTraitorRoles.length + i] = uniqueAssigned[i];
+        }
+
+        // Shuffle rollerna så de sprids
         function shuffle(array) {
-            for (let i = array.length -1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i +1));
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
                 [array[i], array[j]] = [array[j], array[i]];
             }
             return array;
         }
+        rolesToAssign = shuffle(rolesToAssign);
 
-        const shuffledRoles = shuffle(extendedRoles);
-
-        let assignedRoles = players.map((p, index) => ({
+        // Tilldela roller till spelare
+        const assignedRoles = players.map((p, i) => ({
             id: p.id,
             name: p.name,
-            role: shuffledRoles[index],
+            role: rolesToAssign[i],
         }));
 
-        // Skicka ut roller till alla
         io.to(roomCode).emit('gameStarted', assignedRoles);
 
-        // Definiera förrädarroller
-        const traitorRoles = ['förrädare', 'bomb', 'dödskalle'];
-
-        // Skicka individuell info till varje förrädare
+        // Skicka info till förrädare
         assignedRoles.forEach(player => {
             if (traitorRoles.includes(player.role)) {
                 const traitorMates = assignedRoles
                     .filter(p => traitorRoles.includes(p.role) && p.id !== player.id)
                     .map(p => p.name);
-
                 io.to(player.id).emit('traitorInfo', traitorMates);
             }
         });
     });
 
     socket.on('disconnect', () => {
-        console.log(`Användare kopplade från: ${socket.id}`);
         for (const code in rooms) {
             const room = rooms[code];
-            const beforeCount = room.players.length;
             room.players = room.players.filter(p => p.id !== socket.id);
+            io.to(code).emit('playerList', room.players);
 
-            if (room.players.length !== beforeCount) {
-                io.to(code).emit('playerList', room.players);
-                console.log(`Uppdaterade spelare i rum ${code}`);
-            }
-            // Optional: Rensa tomma rum
             if (room.players.length === 0) {
                 delete rooms[code];
-                console.log(`Raderade tomt rum: ${code}`);
             }
         }
     });
