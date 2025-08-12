@@ -92,6 +92,14 @@ io.on('connection', (socket) => {
                 io.to(player.id).emit('traitorInfo', traitorMates);
             }
         });
+
+        // Skicka mål till avrättaren
+        const executioner = assignedRoles.find(p => p.role === 'avrättare');
+        if (executioner) {
+            const possibleTargets = assignedRoles.filter(p => p.id !== executioner.id);
+            const target = possibleTargets[Math.floor(Math.random() * possibleTargets.length)];
+            io.to(executioner.id).emit('executionerTarget', target.name);
+        }
     });
 
     socket.on('disconnect', () => {
