@@ -12,16 +12,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 let rooms = {};
 
 io.on('connection', (socket) => {
-    console.log(`Ny användare anslöt: ${socket.id}`);
+    console.log('Ny användare anslöt');
 
     socket.on('joinRoom', ({ roomCode, name }) => {
         if (!roomCode || !name) return;
 
         if (!rooms[roomCode]) {
-            rooms[roomCode] = { players: [], leader: socket.id };
+            rooms[roomCode] = { players: [], leader: socket.id, traitorCount: 2 }; // default 2 förädare
         }
 
-        // Kolla om socket redan är med i rummet för att stoppa spam
         const alreadyInRoom = rooms[roomCode].players.find(p => p.id === socket.id);
         if (alreadyInRoom) {
             socket.emit('alreadyJoined');
@@ -33,15 +32,23 @@ io.on('connection', (socket) => {
         io.to(roomCode).emit('playerList', rooms[roomCode].players);
     });
 
+    socket.on('updateTraitorCount', ({ roomCode, count }) => {
+        if (rooms[roomCode] && socket.id === rooms[roomCode].leader) {
+            rooms[roomCode].traitorCount = count;
+            io.to(roomCode).emit('traitorCountUpdated', count);
+        }
+    });
+
     socket.on('startGame', (roomCode) => {
         if (!roomCode || !rooms[roomCode]) return;
 
         let players = rooms[roomCode].players;
-        const maxTraitors = 3;
+        const maxTraitors = Math.min(3, players.length);
+        const requestedTraitors = rooms[roomCode].traitorCount || 2;
+        const numTraitors = Math.min(requestedTraitors, maxTraitors);
+
         const traitorRoles = ['förrädare', 'bomb', 'dödskalle'];
         const uniqueRoles = ['avrättare', 'sheriff'];
-
-        const numTraitors = Math.min(maxTraitors, players.length, Math.floor(Math.random() * 2) + 2); // 2 eller 3
 
         let chosenTraitorRoles = [];
         while (chosenTraitorRoles.length < numTraitors) {
@@ -82,10 +89,11 @@ io.on('connection', (socket) => {
 
         io.to(roomCode).emit('gameStarted', assignedRoles);
 
+        const traitorRoleSet = new Set(traitorRoles);
         assignedRoles.forEach(player => {
-            if (traitorRoles.includes(player.role)) {
+            if (traitorRoleSet.has(player.role)) {
                 const traitorMates = assignedRoles
-                    .filter(p => traitorRoles.includes(p.role) && p.id !== player.id)
+                    .filter(p => traitorRoleSet.has(p.role) && p.id !== player.id)
                     .map(p => p.name);
                 io.to(player.id).emit('traitorInfo', traitorMates);
             }
@@ -100,13 +108,15 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        for (const code in rooms) {
-            const room = rooms[code];
+        for (const roomCode in rooms) {
+            const room = rooms[roomCode];
             room.players = room.players.filter(p => p.id !== socket.id);
-            io.to(code).emit('playerList', room.players);
-
+            io.to(roomCode).emit('playerList', room.players);
+            if (room.leader === socket.id && room.players.length > 0) {
+                room.leader = room.players[0].id;
+            }
             if (room.players.length === 0) {
-                delete rooms[code];
+                delete rooms[roomCode];
             }
         }
     });
