@@ -58,8 +58,8 @@ io.on('connection', (socket) => {
         const requestedTraitors = rooms[roomCode].traitorCount || 2;
         const numTraitors = Math.min(requestedTraitors, maxTraitors);
 
-        const traitorRoles = ['förrädare', 'bomb', 'dödskalle'];
-        const uniqueRoles = ['avrättare', 'sheriff'];
+        const traitorRoles = ['förrädare❌️', 'bomb💣', 'döskalle☠️'];
+        const uniqueRoles = ['avrättare😈', 'sheriff🤠'];
 
         // Välj unika förrädar-roller (ingen duplicering här)
         let chosenTraitorRoles = [];
@@ -71,12 +71,12 @@ io.on('connection', (socket) => {
         // Välj unika roller (avrättare & sheriff) om plats finns
         let uniqueAssigned = [];
         if (players.length > chosenTraitorRoles.length) {
-            if (players.length - chosenTraitorRoles.length >= 1) uniqueAssigned.push('avrättare');
-            if (players.length - chosenTraitorRoles.length - uniqueAssigned.length >= 1) uniqueAssigned.push('sheriff');
+            if (players.length - chosenTraitorRoles.length >= 1) uniqueAssigned.push('avrättare😈');
+            if (players.length - chosenTraitorRoles.length - uniqueAssigned.length >= 1) uniqueAssigned.push('sheriff🤠');
         }
 
         // Fyll resten med 'trogen'
-        let rolesToAssign = new Array(players.length).fill('trogen');
+        let rolesToAssign = new Array(players.length).fill('trogen😃');
 
         for (let i = 0; i < chosenTraitorRoles.length; i++) {
             rolesToAssign[i] = chosenTraitorRoles[i];
@@ -116,7 +116,7 @@ io.on('connection', (socket) => {
         });
 
         // Skicka mål till avrättaren
-        const executioner = assignedRoles.find(p => p.role === 'avrättare');
+        const executioner = assignedRoles.find(p => p.role === 'avrättare😈');
         if (executioner) {
             const possibleTargets = assignedRoles.filter(p => p.id !== executioner.id);
             const target = possibleTargets[Math.floor(Math.random() * possibleTargets.length)];
