@@ -30,7 +30,7 @@ io.on('connection', (socket) => {
         }
 
         socket.join(roomCode);
-        rooms[roomCode].players.push({ id: socket.id, name });
+        rooms[roomCode].players.push({ id: socket.id, name, wins: 0 }); // <--- lagt till wins här
 
         // Skicka spelare-lista till alla i rummet
         io.to(roomCode).emit('playerList', rooms[roomCode].players);
@@ -122,6 +122,47 @@ io.on('connection', (socket) => {
             const target = possibleTargets[Math.floor(Math.random() * possibleTargets.length)];
             io.to(executioner.id).emit('executionerTarget', target.name);
         }
+    });
+
+    // 🔹 RESET GAME
+    socket.on('resetGame', (roomCode) => {
+        if (!roomCode || !rooms[roomCode]) return;
+
+        const room = rooms[roomCode];
+
+        // Bara spelledaren får reseta
+        if (socket.id !== room.leader) return;
+
+        // Ta bort roller men behåll namn & vinster
+        room.players = room.players.map(p => ({
+            id: p.id,
+            name: p.name,
+            wins: p.wins
+        }));
+
+        // Skicka spelarna till spelledaren för att välja vinnare
+        io.to(socket.id).emit('selectWinners', room.players);
+
+        // Meddela alla andra att spelet resetats (rensa menyer osv.)
+        socket.to(roomCode).emit('gameReset');
+    });
+
+    // 🔹 DECLARE WINNERS
+    socket.on('declareWinners', ({ roomCode, winners }) => {
+        if (!roomCode || !rooms[roomCode]) return;
+
+        const room = rooms[roomCode];
+
+        // Uppdatera vinster
+        winners.forEach(winnerId => {
+            const player = room.players.find(p => p.id === winnerId);
+            if (player) {
+                player.wins = (player.wins || 0) + 1;
+            }
+        });
+
+        // Skicka tillbaka ny playerlist till alla
+        io.to(roomCode).emit('playerList', room.players);
     });
 
     socket.on('disconnect', () => {
