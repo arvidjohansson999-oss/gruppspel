@@ -126,7 +126,7 @@ socket.on('gameStarted', (assignedRoles) => {
     executionerBox.style.display = 'none';
 
     // visa förrädar-lag
-    const traitorRoles = ['förrädare', 'bomb', 'dödskalle'];
+    const traitorRoles = ['förrädare❌️', 'bomb💣', 'dödskalle☠️'];
     if (traitorRoles.includes(me.role)) {
         const mates = assignedRoles
             .filter(p => traitorRoles.includes(p.role) && p.id !== me.id)
